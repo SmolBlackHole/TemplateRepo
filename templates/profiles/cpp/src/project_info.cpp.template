@@ -1,0 +1,13 @@
+// SPDX-FileCopyrightText: {{year}} {{author}}
+//
+// SPDX-License-Identifier: MPL-2.0
+
+#include "{{project_symbol}}/project_info.hpp"
+
+namespace {{project_symbol}} {
+
+std::string_view project_name() noexcept {
+	return "{{project_name_string}}";
+}
+
+}  // namespace {{project_symbol}}

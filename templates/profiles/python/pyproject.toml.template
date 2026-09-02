@@ -1,0 +1,60 @@
+# SPDX-FileCopyrightText: {{year}} {{author}}
+#
+# SPDX-License-Identifier: MPL-2.0
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "{{project_slug}}"
+version = "0.1.0"
+description = "{{description_string}}"
+readme = "README.md"
+license = "MPL-2.0"
+requires-python = ">=3.12"
+authors = [{ name = "{{author_string}}" }]
+
+[project.optional-dependencies]
+dev = [
+    "mypy>=1.14",
+    "pyright>=1.1.400",
+    "pytest>=8.3",
+    "ruff>=0.9",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"{{python_package}}" = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+src = ["src", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "B", "UP", "RUF", "S"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+mypy_path = ["src"]
+files = ["src/{{python_package}}", "tests"]
+
+[tool.pyright]
+include = ["src", "tests"]
+extraPaths = ["src"]
+pythonVersion = "3.12"
+typeCheckingMode = "strict"

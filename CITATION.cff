@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: 2026 SmolBlackHole
+#
+# SPDX-License-Identifier: MPL-2.0
+
+cff-version: 1.2.0
+message: "If you use this generator, cite it using this metadata."
+title: "TemplateRepo"
+type: software
+authors:
+    - name: "SmolBlackHole"
+version: 0.1.0
+license: MPL-2.0
+abstract: >-
+    A small multi-profile project generator with shared documentation,
+    repository checks and Python, Node.js and C++ starters.

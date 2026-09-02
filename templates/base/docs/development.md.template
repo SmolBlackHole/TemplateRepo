@@ -1,0 +1,23 @@
+# Develop {{project_name}}
+
+Parent: [Documentation index](README.md)
+
+This project uses the `{{profile}}` TemplateRepo profile. VS Code recommendations
+in `.vscode/extensions.json` are optional and scoped to this profile.
+
+## Set up
+
+Run `scripts/setup.ps1` from PowerShell or `scripts/setup.sh` from a POSIX shell.
+The setup command is idempotent and changes only this project directory.
+
+## Run checks
+
+Run `scripts/check.ps1` from PowerShell or `scripts/check.sh` from a POSIX shell.
+The command first validates repository and documentation structure, then runs
+the profile-specific build and smoke tests.
+
+## Tool ownership
+
+The profile's `scripts/dev.py` is the executable authority for setup and checks.
+Keep this page concise and link to the script instead of duplicating its command
+sequence in multiple documents.

@@ -1,0 +1,13 @@
+# Contributing to {{project_name}}
+
+Parent: [Project README](README.md)
+
+Use [the development guide](docs/development.md) for setup and checks. Keep
+changes focused, preserve explicit ownership and update the authoritative
+documentation when behavior changes.
+
+Before proposing a change, run the project check and report failures, skipped
+platforms and remaining uncertainty.
+
+Read [Writing and maintaining documentation](docs/writing-and-maintaining-docs.md)
+before adding or moving a documentation page.

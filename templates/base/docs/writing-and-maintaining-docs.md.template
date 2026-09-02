@@ -1,0 +1,44 @@
+# Writing and maintaining documentation
+
+Parent: [Documentation index](README.md)
+
+Give every fact one authoritative owner. Link to that owner instead of copying
+the same explanation into multiple pages.
+
+## Table of contents
+
+- [Writing and maintaining documentation](#writing-and-maintaining-documentation)
+    - [Table of contents](#table-of-contents)
+    - [Choose the owner](#choose-the-owner)
+    - [Structure docs as a small book](#structure-docs-as-a-small-book)
+    - [Describe the present](#describe-the-present)
+    - [Review checklist](#review-checklist)
+
+## Choose the owner
+
+| Content                                  | Owner                  |
+| ---------------------------------------- | ---------------------- |
+| Purpose and first command                | Root `README.md`       |
+| Documentation navigation                 | `docs/README.md`       |
+| Architecture and dependency direction    | `docs/architecture.md` |
+| Setup, checks and local tooling           | `docs/development.md`  |
+| Unfinished work                           | `ROADMAP.md`           |
+
+## Structure docs as a small book
+
+The root README is the cover. `docs/README.md` is the index. Every page below it
+starts with a `Parent:` link. Pages with multiple main sections include a linked
+table of contents.
+
+## Describe the present
+
+Unmarked prose describes implemented behavior. Put unfinished behavior in the
+roadmap instead of presenting it as current.
+
+## Review checklist
+
+- The page answers one reader question.
+- No other page owns the same fact.
+- Parent and local links resolve.
+- The page is reachable from the root README.
+- Future work stays in the roadmap.

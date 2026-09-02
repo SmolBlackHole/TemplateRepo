@@ -1,0 +1,24 @@
+# Documentation
+
+Parent: [Project README](../README.md)
+
+Use this page as the index after the root README has answered what the project
+does and how to start it.
+
+## Table of contents
+
+- [Documentation](#documentation)
+    - [Table of contents](#table-of-contents)
+    - [Choose a starting point](#choose-a-starting-point)
+
+## Choose a starting point
+
+| Goal                          | Start here                                                |
+| ----------------------------- | --------------------------------------------------------- |
+| Understand system boundaries  | [Architecture](architecture.md)                           |
+| Understand the selected profile | [Profile guide](profile.md)                             |
+| Set up or verify the project  | [Development](development.md)                             |
+| Add or move documentation     | [Writing and maintaining docs](writing-and-maintaining-docs.md) |
+| See unfinished work           | [Roadmap](../ROADMAP.md)                                  |
+| Contribute                    | [Contributing](../CONTRIBUTING.md)                        |
+| Report a vulnerability        | [Security policy](../SECURITY.md)                         |

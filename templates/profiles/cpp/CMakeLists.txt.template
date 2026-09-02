@@ -1,0 +1,38 @@
+# SPDX-FileCopyrightText: {{year}} {{author}}
+#
+# SPDX-License-Identifier: MPL-2.0
+
+cmake_minimum_required(VERSION 3.25)
+
+project({{project_symbol}} VERSION 0.1.0 LANGUAGES CXX)
+
+include(CTest)
+
+function(enable_project_warnings target)
+    if(MSVC)
+        target_compile_options(${target} PRIVATE /W4 /permissive-)
+    else()
+        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic)
+    endif()
+endfunction()
+
+add_library({{project_symbol}}_core src/project_info.cpp)
+target_include_directories(
+    {{project_symbol}}_core
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
+target_compile_features({{project_symbol}}_core PUBLIC cxx_std_20)
+set_target_properties({{project_symbol}}_core PROPERTIES CXX_EXTENSIONS OFF)
+enable_project_warnings({{project_symbol}}_core)
+
+add_executable({{project_symbol}} app/main.cpp)
+target_link_libraries({{project_symbol}} PRIVATE {{project_symbol}}_core)
+enable_project_warnings({{project_symbol}})
+
+if(BUILD_TESTING)
+    add_executable({{project_symbol}}_test tests/project_info_test.cpp)
+    target_link_libraries({{project_symbol}}_test PRIVATE {{project_symbol}}_core)
+    enable_project_warnings({{project_symbol}}_test)
+    add_test(NAME project_info COMMAND {{project_symbol}}_test)
+endif()

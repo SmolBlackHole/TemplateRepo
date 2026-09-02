@@ -1,0 +1,17 @@
+{
+	"recommendations": [
+		"aaron-bond.better-comments",
+		"antfu.file-nesting",
+		"bierner.markdown-preview-github-styles",
+		"christian-kohler.path-intellisense",
+		"davidanson.vscode-markdownlint",
+		"editorconfig.editorconfig",
+		"github.vscode-github-actions",
+		"ibm.output-colorizer",
+		"lacroixdavid1.vscode-format-context-menu",
+		"mhutchie.git-graph",
+		"ms-vscode.cmake-tools",
+		"ms-vscode.cpptools",
+		"redhat.vscode-yaml"
+	]
+}

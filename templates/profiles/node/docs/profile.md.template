@@ -1,0 +1,9 @@
+# Node.js profile
+
+Parent: [Documentation index](README.md)
+
+The Node.js profile targets Node.js 22 or newer and uses ECMAScript modules.
+It starts with no third-party runtime or development dependencies.
+
+Setup runs `npm install` to create or verify the lockfile. The quality command
+uses Node's syntax checker and built-in test runner through `npm run check`.

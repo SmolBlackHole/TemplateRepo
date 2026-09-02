@@ -1,0 +1,17 @@
+# {{project_name}} architecture
+
+Parent: [Documentation index](README.md)
+
+This page owns the system boundary and dependency direction. Replace the starter
+text when the first real architecture decision exists.
+
+## System boundary
+
+The generated repository currently contains one `{{profile}}` starter and its
+local development tooling. It has no external runtime integration by default.
+
+## Ownership
+
+Source code owns runtime behavior. Tests own executable examples and regression
+evidence. `docs/development.md` owns setup and quality commands. `ROADMAP.md`
+owns unfinished work.

@@ -1,0 +1,14 @@
+# {{project_name}} roadmap
+
+Parent: [Project README](README.md)
+
+This page contains unfinished work only. Implemented behavior belongs in the
+README, the documentation, source code or tests that own it.
+
+## Now
+
+- Define the first concrete product outcome.
+
+## Later
+
+- Add future work only when its order or dependency matters.

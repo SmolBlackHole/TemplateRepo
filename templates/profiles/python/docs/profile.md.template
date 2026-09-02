@@ -1,0 +1,10 @@
+# Python profile
+
+Parent: [Documentation index](README.md)
+
+The Python profile creates a typed `src/` package targeting Python 3.12 or
+newer. Setup creates `.venv` and installs the project in editable mode with its
+development dependencies.
+
+The quality command runs Ruff linting and formatting, strict mypy, strict
+Pyright and pytest. `pyproject.toml` is the authority for tool configuration.

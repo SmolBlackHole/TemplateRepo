@@ -1,0 +1,11 @@
+# C++ profile
+
+Parent: [Documentation index](README.md)
+
+The C++ profile requires CMake 3.25 or newer, Ninja and a C++20 compiler. It
+creates a small library with an explicit public header, one executable and one
+CTest smoke test. The starter uses value-returning APIs and owns no dynamic
+resources.
+
+Setup configures an isolated `.build/debug` tree. The quality command configures
+again, builds with common compiler warnings and runs CTest.
