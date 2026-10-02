@@ -27,9 +27,7 @@ from new_workspace import (  # noqa: E402
 from repository_checks import repository_errors  # noqa: E402
 
 
-def _values(
-    layout: str, *, features: tuple[str, ...] = ()
-):
+def _values(layout: str, *, features: tuple[str, ...] = ()):
     return workspace_values(
         name="Example Platform",
         layout=layout,
@@ -203,7 +201,7 @@ class WorkspaceGenerationTests(unittest.TestCase):
                 initialize_git=False,
             )
 
-            self.assertEqual(created, destination)
+            self.assertEqual(created, destination.resolve())
             self.assertEqual(repository_errors(destination), ())
             self.assertTrue((destination / "workspace.toml").is_file())
             self.assertTrue(any("Git repositories: 1" in line for line in output))
