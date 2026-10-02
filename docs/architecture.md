@@ -36,6 +36,7 @@ An existing destination is never overwritten.
 | Concern | Owner |
 | ------- | ----- |
 | Interactive input | `scripts/new.py` |
+| Shared generation primitives | `scripts/generation.py` |
 | Single-project generation | `scripts/new_project.py` |
 | Workspace generation | `scripts/new_workspace.py` |
 | Repository-wide defaults | `templates/repository/` |

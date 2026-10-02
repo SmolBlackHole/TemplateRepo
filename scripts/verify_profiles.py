@@ -13,7 +13,8 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from new_project import FEATURES, PROFILES, create_project, project_values
+from generation import FEATURES, PROFILES, project_values
+from new_project import create_project
 
 
 def _wrapper_command(destination: Path, command: str) -> tuple[str, ...]:

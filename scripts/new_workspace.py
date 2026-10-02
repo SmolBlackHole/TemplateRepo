@@ -9,25 +9,26 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
-from new_project import (
+from generation import (
     FEATURES,
     PROFILES,
     ROOT,
     TEMPLATES,
     ProjectValues,
-    _copy_shared_files,
-    _copy_template_tree,
-    _initialize_git,
-    _substitute,
-    _validate_generated_project,
-    create_project,
+    copy_shared_files,
+    copy_template_tree,
+    initialize_git_repository,
     install_features,
     project_values,
+    staged_destination,
+    substitute,
+    template_token,
+    validate_generated_project,
 )
+from new_project import create_project
 
 LAYOUTS = ("monorepo", "dual-repo")
 COMPONENT_NAME = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
@@ -53,13 +54,16 @@ class WorkspaceValues:
 
     def tokens(self) -> dict[str, str]:
         tokens = self.project.tokens()
-        token = lambda name: "{" * 2 + name + "}" * 2
-        tokens[token("profile")] = self.layout
-        tokens[token("component_table")] = _component_table(self.components)
-        tokens[token("components_toml")] = _components_toml(self.components)
-        tokens[token("profile_links")] = _profile_links(self.components)
-        tokens[token("runtime_setup_steps")] = _runtime_setup_steps(self.components)
-        tokens[token("local_ci_docs")] = _local_ci_docs(self.components, self.features)
+        tokens[template_token("profile")] = self.layout
+        tokens[template_token("component_table")] = _component_table(self.components)
+        tokens[template_token("components_toml")] = _components_toml(self.components)
+        tokens[template_token("profile_links")] = _profile_links(self.components)
+        tokens[template_token("runtime_setup_steps")] = _runtime_setup_steps(
+            self.components
+        )
+        tokens[template_token("local_ci_docs")] = _local_ci_docs(
+            self.components, self.features
+        )
         return tokens
 
 
@@ -215,7 +219,7 @@ def _write_profile_docs(staging: Path, workspace: WorkspaceValues) -> None:
             / "docs"
             / "profile.md.template"
         )
-        contents = _substitute(source.read_text(encoding="utf-8"), workspace.tokens())
+        contents = substitute(source.read_text(encoding="utf-8"), workspace.tokens())
         contents = contents.replace(
             "Parent: [Documentation index](README.md)",
             "Parent: [Documentation index](../README.md)",
@@ -256,13 +260,13 @@ def _write_extensions(staging: Path, workspace: WorkspaceValues) -> None:
 def _create_monorepo(
     *, staging: Path, workspace: WorkspaceValues, initialize_git: bool
 ) -> None:
-    _copy_template_tree(TEMPLATES / "repository", staging, workspace)
-    _copy_template_tree(TEMPLATES / "layouts" / "monorepo", staging, workspace)
-    _copy_shared_files(staging)
+    copy_template_tree(TEMPLATES / "repository", staging, workspace)
+    copy_template_tree(TEMPLATES / "layouts" / "monorepo", staging, workspace)
+    copy_shared_files(staging)
     for component in workspace.components:
         values = _component_values(workspace, component)
         component_root = staging / "apps" / component.name
-        _copy_template_tree(
+        copy_template_tree(
             TEMPLATES / "profiles" / component.profile / "component",
             component_root,
             values,
@@ -276,9 +280,9 @@ def _create_monorepo(
         )
     _write_profile_docs(staging, workspace)
     _write_extensions(staging, workspace)
-    _validate_generated_project(staging)
+    validate_generated_project(staging)
     if initialize_git:
-        _initialize_git(staging)
+        initialize_git_repository(staging)
 
 
 def _create_dual_repo(
@@ -297,15 +301,10 @@ def create_workspace(
     *, destination: Path, values: WorkspaceValues, initialize_git: bool
 ) -> Path:
     """Create a complete workspace without overwriting an existing path."""
-    destination = destination.expanduser().resolve()
-    if destination.exists():
-        raise FileExistsError(f"destination already exists: {destination}")
-    destination.parent.mkdir(parents=True, exist_ok=True)
-
-    with tempfile.TemporaryDirectory(
-        prefix=f".{values.project.project_slug}-", dir=destination.parent
-    ) as temporary_directory:
-        staging = Path(temporary_directory)
+    with staged_destination(destination, values.project.project_slug) as (
+        destination,
+        staging,
+    ):
         if values.layout == "monorepo":
             _create_monorepo(
                 staging=staging,
@@ -318,7 +317,6 @@ def create_workspace(
                 workspace=values,
                 initialize_git=initialize_git,
             )
-        staging.replace(destination)
     return destination
 
 

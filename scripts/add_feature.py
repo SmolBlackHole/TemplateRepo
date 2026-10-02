@@ -9,7 +9,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from new_project import FEATURES, PROFILES, install_features
+from generation import FEATURES, PROFILES, install_features
 
 
 def main() -> None:

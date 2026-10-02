@@ -12,7 +12,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-from new_project import FEATURES
+from generation import FEATURES
 from new_workspace import ComponentSpec, create_workspace, workspace_values
 
 
