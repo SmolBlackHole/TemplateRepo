@@ -10,11 +10,12 @@ to their selected runtime profile.
 ## Table of contents
 
 - [Develop and verify TemplateRepo](#develop-and-verify-templaterepo)
-    - [Table of contents](#table-of-contents)
-    - [Set up](#set-up)
-    - [Run checks](#run-checks)
-    - [Test one generated profile](#test-one-generated-profile)
-    - [Acceptance criteria](#acceptance-criteria)
+  - [Table of contents](#table-of-contents)
+  - [Set up](#set-up)
+  - [Run checks](#run-checks)
+  - [Test one generated profile](#test-one-generated-profile)
+  - [Verify an optional feature](#verify-an-optional-feature)
+  - [Acceptance criteria](#acceptance-criteria)
 
 ## Set up
 
@@ -55,6 +56,19 @@ python scripts/verify_profiles.py --profile python
 python scripts/verify_profiles.py
 ```
 
+## Verify an optional feature
+
+Generate all profiles with the Docker-based Linux precheck included:
+
+```powershell
+python scripts/verify_profiles.py --feature local-ci
+```
+
+This verifies generation, setup and each profile's native checks. Generator
+tests also cover adding the feature later, repeated installation and conflict
+handling. Running the generated Docker images remains an explicit acceptance
+step because it needs Docker Desktop or Docker Engine.
+
 ## Acceptance criteria
 
 - All three profiles generate without unresolved tokens.
@@ -63,3 +77,4 @@ python scripts/verify_profiles.py
 - Every generated Markdown page is reachable from its root README.
 - Profile setup is idempotent.
 - Profile checks build or execute the smallest meaningful smoke test.
+- Optional features are absent by default and do not overwrite existing files.

@@ -13,7 +13,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from new_project import PROFILES, create_project, project_values
+from new_project import FEATURES, PROFILES, create_project, project_values
 
 
 def _wrapper_command(destination: Path, command: str) -> tuple[str, ...]:
@@ -35,7 +35,9 @@ def _wrapper_command(destination: Path, command: str) -> tuple[str, ...]:
     return (shell, str(destination / "scripts" / f"{command}.sh"))
 
 
-def verify_profile(profile: str, temporary_root: Path) -> None:
+def verify_profile(
+    profile: str, temporary_root: Path, features: tuple[str, ...]
+) -> None:
     """Generate, set up and check one selected profile."""
     destination = temporary_root / profile
     values = project_values(
@@ -48,6 +50,7 @@ def verify_profile(profile: str, temporary_root: Path) -> None:
         destination=destination,
         values=values,
         initialize_git=False,
+        features=features,
     )
     for command in ("setup", "setup", "check"):
         print(f"\n> [{profile}] {command}", flush=True)
@@ -66,12 +69,20 @@ def main() -> None:
         choices=PROFILES,
         help="Profile to verify. Repeat the option to select multiple profiles.",
     )
-    profiles = tuple(parser.parse_args().profile or PROFILES)
+    parser.add_argument(
+        "--feature",
+        action="append",
+        choices=FEATURES,
+        help="Optional generated feature. Repeat to select multiple features.",
+    )
+    args = parser.parse_args()
+    profiles = tuple(args.profile or PROFILES)
+    features = tuple(args.feature or ())
 
     with tempfile.TemporaryDirectory(prefix="templaterepo-verification-") as temporary:
         temporary_root = Path(temporary)
         for profile in profiles:
-            verify_profile(profile, temporary_root)
+            verify_profile(profile, temporary_root, features)
 
 
 if __name__ == "__main__":

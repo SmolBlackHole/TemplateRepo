@@ -16,7 +16,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from new_project import PROFILES, create_project, project_values  # noqa: E402
+from new_project import (  # noqa: E402
+    PROFILES,
+    create_project,
+    install_features,
+    project_values,
+)
 from repository_checks import repository_errors  # noqa: E402
 
 
@@ -46,6 +51,109 @@ class ProjectGenerationTests(unittest.TestCase):
                     )
                     self.assertEqual(repository_errors(destination), ())
                     self.assertTrue((destination / "scripts" / "dev.py").is_file())
+                    self.assertFalse((destination / "Dockerfile.ci").exists())
+
+    def test_local_ci_feature_generates_for_every_profile(self) -> None:
+        expected_bases = {
+            "python": "FROM python:3.12-slim-bookworm",
+            "node": "FROM node:22-bookworm-slim AS node",
+            "cpp": "ninja-build",
+        }
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            temporary_root = Path(temporary_directory)
+            for profile in PROFILES:
+                with self.subTest(profile=profile):
+                    destination = temporary_root / profile
+                    values = project_values(
+                        name=f"Container {profile.title()}",
+                        profile=profile,
+                        description="Generated with the local CI feature.",
+                        author="Template Test",
+                    )
+                    create_project(
+                        destination=destination,
+                        values=values,
+                        initialize_git=False,
+                        features=("local-ci",),
+                    )
+
+                    dockerfile = (destination / "Dockerfile.ci").read_text(
+                        encoding="utf-8"
+                    )
+                    runner = (destination / "scripts" / "check_container.py").read_text(
+                        encoding="utf-8"
+                    )
+                    development = (destination / "docs" / "development.md").read_text(
+                        encoding="utf-8"
+                    )
+                    self.assertIn(expected_bases[profile], dockerfile)
+                    self.assertIn(
+                        'CMD ["python", "scripts/dev.py", "check"]', dockerfile
+                    )
+                    self.assertIn('"--init", "--rm"', runner)
+                    self.assertIn("## Run the Linux CI precheck", development)
+                    self.assertTrue((destination / ".dockerignore").is_file())
+                    self.assertEqual(repository_errors(destination), ())
+
+    def test_local_ci_can_be_added_to_an_existing_project_idempotently(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            destination = Path(temporary_directory) / "existing"
+            values = project_values(
+                name="Existing",
+                profile="python",
+                description=None,
+                author="Template Test",
+            )
+            create_project(
+                destination=destination,
+                values=values,
+                initialize_git=False,
+            )
+
+            install_features(
+                destination=destination,
+                profile="python",
+                features=("local-ci",),
+            )
+            development = destination / "docs" / "development.md"
+            first = development.read_text(encoding="utf-8")
+            install_features(
+                destination=destination,
+                profile="python",
+                features=("local-ci", "local-ci"),
+            )
+
+            self.assertEqual(development.read_text(encoding="utf-8"), first)
+            self.assertEqual(first.count("## Run the Linux CI precheck"), 1)
+
+    def test_feature_conflict_leaves_existing_project_unchanged(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            destination = Path(temporary_directory) / "existing"
+            values = project_values(
+                name="Existing",
+                profile="node",
+                description=None,
+                author="Template Test",
+            )
+            create_project(
+                destination=destination,
+                values=values,
+                initialize_git=False,
+            )
+            dockerfile = destination / "Dockerfile.ci"
+            dockerfile.write_text("keep me\n", encoding="utf-8")
+            development = destination / "docs" / "development.md"
+            before = development.read_bytes()
+
+            with self.assertRaisesRegex(FileExistsError, "would replace"):
+                install_features(
+                    destination=destination,
+                    profile="node",
+                    features=("local-ci",),
+                )
+
+            self.assertEqual(dockerfile.read_text(encoding="utf-8"), "keep me\n")
+            self.assertEqual(development.read_bytes(), before)
 
     def test_existing_destination_is_never_overwritten(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -156,7 +264,7 @@ class ProjectGenerationTests(unittest.TestCase):
                         source = (destination / "src" / "project_info.cpp").read_text(
                             encoding="utf-8"
                         )
-                        self.assertIn(r'\"Quoted\"', source)
+                        self.assertIn(r"\"Quoted\"", source)
 
     def test_multiline_values_are_rejected(self) -> None:
         with self.assertRaisesRegex(ValueError, "single line"):

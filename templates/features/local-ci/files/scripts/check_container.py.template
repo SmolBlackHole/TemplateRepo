@@ -1,0 +1,33 @@
+# SPDX-License-Identifier: MPL-2.0
+
+"""Run the project quality gate in a disposable Linux container."""
+
+from __future__ import annotations
+
+import re
+import shutil
+import subprocess
+from collections.abc import Sequence
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _run(command: Sequence[str]) -> None:
+    print(f"> {' '.join(command)}", flush=True)
+    subprocess.run(command, cwd=ROOT, check=True)
+
+
+def main() -> None:
+    docker = shutil.which("docker")
+    if docker is None:
+        raise SystemExit("Docker Desktop or Docker Engine is required.")
+    project = re.sub(r"[^a-z0-9_.-]+", "-", ROOT.name.lower()).strip("-._")
+    image = f"{project or 'project'}-ci:local"
+    _run((docker, "info", "--format", "Docker {{.ServerVersion}}"))
+    _run((docker, "build", "--file", "Dockerfile.ci", "--tag", image, "."))
+    _run((docker, "run", "--init", "--rm", image))
+
+
+if __name__ == "__main__":
+    main()

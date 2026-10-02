@@ -14,6 +14,7 @@ PowerShell:
 .\scripts\new-project.ps1 `
     -Name "Example Project" `
     -Profile python `
+    -Feature local-ci `
     -Destination D:\Projects\example-project
 ```
 
@@ -23,6 +24,7 @@ Linux or macOS:
 ./scripts/new-project.sh \
     --name "Example Project" \
     --profile python \
+    --feature local-ci \
     --destination ../example-project
 ```
 
@@ -36,6 +38,23 @@ Available profiles:
 
 Python 3.11 or newer is the only requirement for running the generator. Git is
 used to initialize the result unless `--no-git` is passed.
+
+`local-ci` is an optional feature. It adds a disposable Docker-based Linux
+precheck without changing the profile's quality command. Omit `--feature` when
+the project does not need container verification.
+
+Add the same feature later to an existing generated project from the
+TemplateRepo root:
+
+```powershell
+python scripts/add_feature.py `
+    --destination D:\Projects\example-project `
+    --profile python `
+    --feature local-ci
+```
+
+The installer is idempotent for unchanged feature files and refuses to replace
+project-owned files.
 
 ## Work on the generator
 

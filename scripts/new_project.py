@@ -20,6 +20,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATES = ROOT / "templates"
 PROFILES = ("python", "node", "cpp")
+FEATURES = ("local-ci",)
 TEMPLATE_SUFFIX = ".template"
 TOKEN_PATTERN = re.compile(r"{{[a-z0-9_]+}}")
 
@@ -131,6 +132,120 @@ def _copy_template_tree(source: Path, destination: Path, values: ProjectValues) 
         target.write_text(_substitute(contents, tokens), encoding="utf-8", newline="\n")
 
 
+def _selected_features(features: tuple[str, ...]) -> tuple[str, ...]:
+    selected = tuple(dict.fromkeys(features))
+    unsupported = tuple(feature for feature in selected if feature not in FEATURES)
+    if unsupported:
+        raise ValueError(f"unsupported feature: {unsupported[0]}")
+    return selected
+
+
+def _feature_files(
+    *, feature: str, profile: str, tokens: dict[str, str]
+) -> tuple[tuple[Path, str], ...]:
+    changes: list[tuple[Path, str]] = []
+    feature_root = TEMPLATES / "features" / feature
+    for source_root in (
+        feature_root / "files",
+        feature_root / "profiles" / profile,
+    ):
+        if not source_root.is_dir():
+            continue
+        for source_path in sorted(source_root.rglob("*")):
+            if not source_path.is_file():
+                continue
+            relative = _target_path(source_path.relative_to(source_root), tokens)
+            contents = _substitute(source_path.read_text(encoding="utf-8"), tokens)
+            changes.append((relative, contents))
+    return tuple(changes)
+
+
+def _feature_appends(
+    *, feature: str, tokens: dict[str, str]
+) -> tuple[tuple[Path, str], ...]:
+    append_root = TEMPLATES / "features" / feature / "append"
+    if not append_root.is_dir():
+        return ()
+    changes: list[tuple[Path, str]] = []
+    for source_path in sorted(append_root.rglob("*")):
+        if not source_path.is_file():
+            continue
+        relative = _target_path(source_path.relative_to(append_root), tokens)
+        contents = _substitute(source_path.read_text(encoding="utf-8"), tokens)
+        changes.append((relative, contents))
+    return tuple(changes)
+
+
+def install_features(
+    *,
+    destination: Path,
+    profile: str,
+    features: tuple[str, ...],
+    tokens: dict[str, str] | None = None,
+) -> None:
+    """Add optional feature files without replacing project-owned content."""
+    if profile not in PROFILES:
+        raise ValueError(f"unsupported profile: {profile}")
+    selected = _selected_features(features)
+    if not selected:
+        return
+
+    destination = destination.expanduser().resolve()
+    if not destination.is_dir():
+        raise FileNotFoundError(f"project directory does not exist: {destination}")
+
+    substitutions = tokens or {}
+    writes: dict[Path, str] = {}
+    for feature in selected:
+        for relative, contents in _feature_files(
+            feature=feature,
+            profile=profile,
+            tokens=substitutions,
+        ):
+            target = destination / relative
+            if target.exists():
+                current = target.read_text(encoding="utf-8")
+                if current != contents:
+                    raise FileExistsError(
+                        f"feature {feature} would replace existing file: {relative}"
+                    )
+            else:
+                writes[target] = contents
+
+        for relative, addition in _feature_appends(
+            feature=feature,
+            tokens=substitutions,
+        ):
+            target = destination / relative
+            if not target.is_file():
+                raise FileNotFoundError(
+                    f"feature {feature} cannot extend missing file: {relative}"
+                )
+            current = target.read_text(encoding="utf-8")
+            normalized_addition = addition.strip() + "\n"
+            heading = normalized_addition.partition("\n")[0]
+            if normalized_addition in current:
+                continue
+            if heading in current:
+                raise FileExistsError(
+                    f"feature {feature} conflicts with existing section: {relative}"
+                )
+            writes[target] = current.rstrip() + "\n\n" + normalized_addition
+
+    unresolved = tuple(
+        path for path, contents in writes.items() if TOKEN_PATTERN.search(contents)
+    )
+    if unresolved:
+        formatted = ", ".join(
+            str(path.relative_to(destination)) for path in sorted(unresolved)
+        )
+        raise ValueError(f"unresolved feature tokens in: {formatted}")
+
+    for target, contents in writes.items():
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(contents, encoding="utf-8", newline="\n")
+
+
 def _copy_shared_files(destination: Path) -> None:
     for filename in (
         ".editorconfig",
@@ -179,7 +294,11 @@ def _initialize_git(destination: Path) -> None:
 
 
 def create_project(
-    *, destination: Path, values: ProjectValues, initialize_git: bool
+    *,
+    destination: Path,
+    values: ProjectValues,
+    initialize_git: bool,
+    features: tuple[str, ...] = (),
 ) -> Path:
     """Create one complete project without overwriting an existing path."""
     destination = destination.expanduser().resolve()
@@ -194,6 +313,12 @@ def create_project(
         _copy_template_tree(TEMPLATES / "base", staging, values)
         _copy_template_tree(TEMPLATES / "profiles" / values.profile, staging, values)
         _copy_shared_files(staging)
+        install_features(
+            destination=staging,
+            profile=values.profile,
+            features=features,
+            tokens=values.tokens(),
+        )
         _validate_generated_project(staging)
         if initialize_git:
             _initialize_git(staging)
@@ -209,6 +334,13 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--destination", type=Path, help="New project directory.")
     parser.add_argument("--description", help="One-sentence project description.")
     parser.add_argument("--author", default="SmolBlackHole")
+    parser.add_argument(
+        "--feature",
+        action="append",
+        choices=FEATURES,
+        default=[],
+        help="Optional feature to include. Repeat to select multiple features.",
+    )
     parser.add_argument(
         "--no-git", action="store_true", help="Do not initialize a Git repository."
     )
@@ -228,6 +360,7 @@ def main() -> None:
         destination=destination,
         values=values,
         initialize_git=not args.no_git,
+        features=tuple(args.feature),
     )
     print(f"Created {values.profile} project at {created}")
     print(f"Next: {created / 'scripts' / 'setup.ps1'}")

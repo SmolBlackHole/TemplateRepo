@@ -1,0 +1,16 @@
+## Run the Linux CI precheck
+
+With Docker Desktop or Docker Engine running, execute the project gate in a
+clean, disposable Linux container:
+
+```powershell
+.\scripts\check-container.ps1
+```
+
+Linux and macOS can use `./scripts/check-container.sh`. The command builds
+`Dockerfile.ci`, starts the container with `--init`, and removes it after the
+run. Inside the container, `python scripts/dev.py check` remains the only source
+of quality-check behavior. Docker retains the local image as a build cache.
+
+This precheck catches clean-environment and Linux-only problems locally. GitHub
+Actions still owns the Windows job and the final hosted-runner result.

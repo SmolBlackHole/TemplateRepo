@@ -16,6 +16,8 @@ param(
 
     [string] $Description,
     [string] $Author = "SmolBlackHole",
+    [ValidateSet("local-ci")]
+    [string[]] $Feature,
     [switch] $NoGit
 )
 
@@ -42,6 +44,9 @@ if ($Description) {
 }
 if ($NoGit) {
     $pythonArguments += "--no-git"
+}
+foreach ($selectedFeature in $Feature) {
+    $pythonArguments += @("--feature", $selectedFeature)
 }
 
 & $pythonCommand.Source @pythonArguments
