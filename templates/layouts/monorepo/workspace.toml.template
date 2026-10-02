@@ -1,0 +1,7 @@
+# SPDX-FileCopyrightText: {{year}} {{author}}
+#
+# SPDX-License-Identifier: MPL-2.0
+
+layout = "monorepo"
+
+{{components_toml}}

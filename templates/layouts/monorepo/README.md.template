@@ -1,0 +1,43 @@
+# {{project_name}}
+
+{{description}}
+
+This repository is a TemplateRepo monorepo. Repository-wide documentation,
+tooling and policy live at the root; runtime code lives in `apps/`.
+
+## Components
+
+{{component_table}}
+
+## Set up
+
+```powershell
+.\scripts\setup.ps1
+```
+
+On Linux or macOS, run `sh scripts/setup.sh`.
+
+## Check the workspace
+
+```powershell
+.\scripts\check.ps1
+```
+
+On Linux or macOS, run `sh scripts/check.sh`.
+
+## Documentation
+
+The [documentation index](docs/README.md) routes by task. The main project
+documents are:
+
+- [Architecture](docs/architecture.md)
+- [Development](docs/development.md)
+- [Writing and maintaining docs](docs/writing-and-maintaining-docs.md)
+- [Roadmap](ROADMAP.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+
+## License
+
+Copyright {{year}} {{author}}. Licensed under the
+[Mozilla Public License 2.0](LICENSE).

@@ -5,7 +5,5 @@
 
 set -eu
 
-echo "TemplateRepo has no third-party runtime dependencies."
-echo "Verifying the generator and its templates..."
 script_directory=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-exec "$script_directory/check.sh"
+exec python3 "$script_directory/setup.py"

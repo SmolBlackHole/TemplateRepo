@@ -5,14 +5,5 @@
 
 set -eu
 
-if command -v python3 >/dev/null 2>&1; then
-    python_command=python3
-elif command -v python >/dev/null 2>&1; then
-    python_command=python
-else
-    echo "Python 3.11 or newer is required." >&2
-    exit 1
-fi
-
 script_directory=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-exec "$python_command" "$script_directory/check.py"
+exec python3 "$script_directory/check.py"

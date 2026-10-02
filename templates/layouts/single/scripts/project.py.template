@@ -1,0 +1,39 @@
+# SPDX-FileCopyrightText: {{year}} {{author}}
+#
+# SPDX-License-Identifier: MPL-2.0
+
+"""Set up and verify the complete generated repository."""
+
+from __future__ import annotations
+
+import argparse
+import subprocess
+import sys
+from pathlib import Path
+
+from repository_checks import run_repository_checks
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _run_profile(command: str) -> None:
+    subprocess.run(
+        (sys.executable, str(ROOT / "scripts" / "dev.py"), command),
+        cwd=ROOT,
+        check=True,
+    )
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("command", choices=("setup", "check"))
+    command = parser.parse_args().command
+    if command == "setup":
+        _run_profile("setup")
+        return
+    run_repository_checks(ROOT)
+    _run_profile("check")
+
+
+if __name__ == "__main__":
+    main()

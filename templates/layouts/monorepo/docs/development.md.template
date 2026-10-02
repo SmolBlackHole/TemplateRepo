@@ -1,0 +1,25 @@
+# Develop {{project_name}}
+
+Parent: [Documentation index](README.md)
+
+Python 3.11 or newer runs all repository tooling. PowerShell and POSIX shell
+files are only platform entrypoints into Python.
+
+## Set up
+
+Run `scripts/setup.ps1` from PowerShell or `scripts/setup.sh` from a POSIX shell.
+The workspace runner reads `workspace.toml` and sets up each component in its
+declared order.
+
+## Run checks
+
+Run `scripts/check.ps1` from PowerShell or `scripts/check.sh` from a POSIX shell.
+The command validates the repository once, then runs every component's runtime
+checks.
+
+{{local_ci_docs}}
+
+## Tool ownership
+
+`scripts/workspace.py` owns workspace orchestration. Each component's
+`scripts/dev.py` owns only its runtime-specific setup and checks.

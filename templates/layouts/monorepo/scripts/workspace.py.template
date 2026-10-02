@@ -1,0 +1,56 @@
+# SPDX-FileCopyrightText: {{year}} {{author}}
+#
+# SPDX-License-Identifier: MPL-2.0
+
+"""Set up and verify every component in this monorepo."""
+
+from __future__ import annotations
+
+import argparse
+import subprocess
+import sys
+import tomllib
+from pathlib import Path
+
+from repository_checks import run_repository_checks
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _component_paths() -> tuple[Path, ...]:
+    with (ROOT / "workspace.toml").open("rb") as stream:
+        configuration = tomllib.load(stream)
+    paths: list[Path] = []
+    for component in configuration["components"]:
+        path = (ROOT / component["path"]).resolve()
+        try:
+            path.relative_to(ROOT)
+        except ValueError as error:
+            raise SystemExit(f"component path escapes workspace: {path}") from error
+        if not path.is_dir():
+            raise SystemExit(f"component directory does not exist: {path}")
+        paths.append(path)
+    return tuple(paths)
+
+
+def _run(component: Path, command: str) -> None:
+    print(f"> [{component.name}] {command}", flush=True)
+    subprocess.run(
+        (sys.executable, str(component / "scripts" / "dev.py"), command),
+        cwd=component,
+        check=True,
+    )
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("command", choices=("setup", "check"))
+    command = parser.parse_args().command
+    if command == "check":
+        run_repository_checks(ROOT)
+    for component in _component_paths():
+        _run(component, command)
+
+
+if __name__ == "__main__":
+    main()

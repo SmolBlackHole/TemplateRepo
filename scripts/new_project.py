@@ -182,6 +182,7 @@ def install_features(
     profile: str,
     features: tuple[str, ...],
     tokens: dict[str, str] | None = None,
+    include_appends: bool = True,
 ) -> None:
     """Add optional feature files without replacing project-owned content."""
     if profile not in PROFILES:
@@ -212,10 +213,12 @@ def install_features(
             else:
                 writes[target] = contents
 
-        for relative, addition in _feature_appends(
-            feature=feature,
-            tokens=substitutions,
-        ):
+        appends = (
+            _feature_appends(feature=feature, tokens=substitutions)
+            if include_appends
+            else ()
+        )
+        for relative, addition in appends:
             target = destination / relative
             if not target.is_file():
                 raise FileNotFoundError(
@@ -310,8 +313,11 @@ def create_project(
         prefix=f".{values.project_slug}-", dir=destination.parent
     ) as temporary_directory:
         staging = Path(temporary_directory)
-        _copy_template_tree(TEMPLATES / "base", staging, values)
-        _copy_template_tree(TEMPLATES / "profiles" / values.profile, staging, values)
+        _copy_template_tree(TEMPLATES / "repository", staging, values)
+        _copy_template_tree(TEMPLATES / "layouts" / "single", staging, values)
+        profile_root = TEMPLATES / "profiles" / values.profile
+        _copy_template_tree(profile_root / "component", staging, values)
+        _copy_template_tree(profile_root / "repository", staging, values)
         _copy_shared_files(staging)
         install_features(
             destination=staging,
@@ -329,20 +335,30 @@ def create_project(
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--name", required=True, help="Human-readable project name.")
-    parser.add_argument("--profile", required=True, choices=PROFILES)
-    parser.add_argument("--destination", type=Path, help="New project directory.")
-    parser.add_argument("--description", help="One-sentence project description.")
-    parser.add_argument("--author", default="SmolBlackHole")
+    parser.add_argument(
+        "--name", "-Name", required=True, help="Human-readable project name."
+    )
+    parser.add_argument("--profile", "-Profile", required=True, choices=PROFILES)
+    parser.add_argument(
+        "--destination", "-Destination", type=Path, help="New project directory."
+    )
+    parser.add_argument(
+        "--description", "-Description", help="One-sentence project description."
+    )
+    parser.add_argument("--author", "-Author", default="SmolBlackHole")
     parser.add_argument(
         "--feature",
+        "-Feature",
         action="append",
         choices=FEATURES,
         default=[],
         help="Optional feature to include. Repeat to select multiple features.",
     )
     parser.add_argument(
-        "--no-git", action="store_true", help="Do not initialize a Git repository."
+        "--no-git",
+        "-NoGit",
+        action="store_true",
+        help="Do not initialize a Git repository.",
     )
     return parser
 

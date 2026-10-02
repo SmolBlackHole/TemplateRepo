@@ -1,0 +1,22 @@
+# {{project_name}} architecture
+
+Parent: [Documentation index](README.md)
+
+This repository owns one product workspace with multiple runtime components.
+`workspace.toml` is the executable component inventory.
+
+## Ownership
+
+The repository root owns Git history, policy, documentation, editor settings,
+CI and cross-component orchestration. Each directory below `apps/` owns one
+runtime, its dependencies, source code, tests and profile-specific tooling.
+
+Components may depend on explicit contracts, but they must not reach into
+another component's private source tree merely because both live in one
+repository.
+
+## Git boundary
+
+There is exactly one `.git` directory at the repository root. Components never
+contain nested repositories or submodules. A component can later be extracted
+with a history-filtering tool using its `apps/<name>/` path.

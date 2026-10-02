@@ -1,12 +1,27 @@
 # TemplateRepo
 
-A small project generator with a shared documentation foundation and focused
-Python, Node.js and C++ profiles.
+A small interactive generator for single projects, monorepos and two
+independent sibling repositories. Every result starts with a shared
+documentation foundation and focused Python, Node.js or C++ components.
 
 The generator creates a new directory. It never rewrites this repository and
 it copies `.editorconfig` byte for byte into the generated project.
 
-## Create a project
+## Create interactively
+
+Python 3.11 or newer is required. PowerShell and POSIX shell files are only
+entrypoints into Python.
+
+```powershell
+.\scripts\new.ps1
+```
+
+The wizard selects a single project, monorepo or dual-repo, collects runtime
+profiles and optional features, then shows the complete result before writing.
+
+## Create non-interactively
+
+Single project:
 
 PowerShell:
 
@@ -21,12 +36,28 @@ PowerShell:
 Linux or macOS:
 
 ```bash
-./scripts/new-project.sh \
+sh scripts/new-project.sh \
     --name "Example Project" \
     --profile python \
     --feature local-ci \
     --destination ../example-project
 ```
+
+Monorepo or dual-repo:
+
+```powershell
+.\scripts\new-workspace.ps1 `
+    -Name "Example Platform" `
+    -Layout monorepo `
+    -Component frontend:node `
+    -Component backend:python `
+    -Feature local-ci `
+    -Destination D:\Projects\example-platform
+```
+
+`monorepo` creates one Git repository with components below `apps/`.
+`dual-repo` creates exactly two complete sibling projects, each with its own
+Git repository. The grouping directory owns no additional files.
 
 Available profiles:
 
@@ -36,8 +67,8 @@ Available profiles:
 | `node`   | Dependency-free ESM and `node:test`        | `./scripts/check.*`          |
 | `cpp`    | CMake, Ninja, C++20, library and test      | `./scripts/check.*`          |
 
-Python 3.11 or newer is the only requirement for running the generator. Git is
-used to initialize the result unless `--no-git` is passed.
+Git initializes the result unless `--no-git` or `-NoGit` is passed to a
+non-interactive generator.
 
 `local-ci` is an optional feature. It adds a disposable Docker-based Linux
 precheck without changing the profile's quality command. Omit `--feature` when
@@ -67,10 +98,12 @@ The setup command is intentionally idempotent. The generator has no third-party
 runtime dependencies, so setup verifies the local prerequisites and runs the
 repository checks.
 
-To generate and exercise every profile in temporary directories, run:
+To generate and exercise every profile and workspace layout in temporary
+directories, run:
 
 ```powershell
 python scripts/verify_profiles.py
+python scripts/verify_workspaces.py
 ```
 
 ## Documentation

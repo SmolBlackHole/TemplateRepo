@@ -1,0 +1,64 @@
+# SPDX-FileCopyrightText: {{year}} {{author}}
+#
+# SPDX-License-Identifier: MPL-2.0
+
+"""Set up and verify the CMake/C++ project."""
+
+from __future__ import annotations
+
+import argparse
+import shutil
+import subprocess
+from collections.abc import Sequence
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+BUILD = ROOT / ".build" / "debug"
+
+
+def _tool(name: str) -> str:
+    resolved = shutil.which(name)
+    if resolved is None:
+        raise SystemExit(f"Required tool is not available: {name}")
+    return resolved
+
+
+def _run(command: Sequence[str]) -> None:
+    print(f"> {' '.join(command)}", flush=True)
+    subprocess.run(command, cwd=ROOT, check=True)
+
+
+def setup() -> None:
+    ninja = _tool("ninja")
+    _run(
+        (
+            _tool("cmake"),
+            "-G",
+            "Ninja",
+            "-S",
+            str(ROOT),
+            "-B",
+            str(BUILD),
+            f"-DCMAKE_MAKE_PROGRAM={ninja}",
+            "-DCMAKE_BUILD_TYPE=Debug",
+            "-DBUILD_TESTING=ON",
+        )
+    )
+
+
+def check() -> None:
+    setup()
+    cmake = _tool("cmake")
+    _run((cmake, "--build", str(BUILD), "--config", "Debug"))
+    _run((_tool("ctest"), "--test-dir", str(BUILD), "-C", "Debug", "--output-on-failure"))
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("command", choices=("setup", "check"))
+    command = parser.parse_args().command
+    setup() if command == "setup" else check()
+
+
+if __name__ == "__main__":
+    main()

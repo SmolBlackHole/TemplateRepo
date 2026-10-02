@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2026 SmolBlackHole
+# SPDX-FileCopyrightText: {{year}} {{author}}
 #
 # SPDX-License-Identifier: MPL-2.0
 
@@ -13,8 +13,8 @@ permissions:
     contents: read
 
 jobs:
-    generator:
-        name: Generator on ${{ matrix.os }}
+    quality:
+        name: Workspace on ${{ matrix.os }}
         runs-on: ${{ matrix.os }}
         timeout-minutes: 20
         strategy:
@@ -31,11 +31,10 @@ jobs:
               with:
                   python-version: "3.12"
 
-            - name: Run repository checks
-              run: python scripts/check.py
+{{runtime_setup_steps}}
 
-            - name: Generate, set up and verify all profiles
-              run: python scripts/verify_profiles.py
+            - name: Set up workspace
+              run: python scripts/workspace.py setup
 
-            - name: Generate, set up and verify workspace layouts
-              run: python scripts/verify_workspaces.py
+            - name: Run checks
+              run: python scripts/workspace.py check
